@@ -13,6 +13,7 @@ public sealed class SCBlockMetadata
 {
     private readonly Dictionary<IDataIndirect, string> BlockList;
     private readonly Dictionary<uint, string> ValueList;
+    private readonly Dictionary<uint, string> ValueListExtras;
     private readonly SCBlockAccessor Accessor;
 
     /// <summary>
@@ -24,9 +25,13 @@ public sealed class SCBlockMetadata
 
         BlockList = aType.GetAllPropertiesOfType<IDataIndirect>(accessor);
         ValueList = aType.GetAllConstantsOfType<uint>();
-        AddExtraKeyNames(ValueList, extraKeyNames);
+        ValueListExtras = new Dictionary<uint, string>();
+        AddExtraKeyNames(ValueListExtras, extraKeyNames);
         if (exclusions.Length > 0)
+        {
             ValueList = ValueList.Where(z => !exclusions.Any(z.Value.Contains)).ToDictionary(z => z.Key, z => z.Value);
+            ValueListExtras = ValueListExtras.Where(z => !exclusions.Any(z.Value.Contains)).ToDictionary(z => z.Key, z => z.Value);
+        }
         Accessor = accessor;
     }
 
@@ -56,7 +61,8 @@ public sealed class SCBlockMetadata
                 continue;
 
             var name = line[(split + 1)..].ToString();
-            names.TryAdd((uint)value, name);
+            //names.TryAdd((uint)value, name);
+            names[(uint)value] = name;
         }
     }
 
@@ -66,7 +72,8 @@ public sealed class SCBlockMetadata
         if (text.Length != 0 && text[0] == '*')
             return text;
         // key:X8, " - ", "####", " ", type
-        return text[(8 + 3 + 4 + 1)..];
+        //return text[(8 + 3 + 4 + 1)..];
+        return text;
     }
 
     private string GetBlockHint(SCBlock z, int index)
@@ -75,8 +82,10 @@ public sealed class SCBlockMetadata
         var isBool = z.Type.IsBoolean();
         var type = (isBool ? "Bool" : z.Type.ToString());
         if (blockName != null)
-            return $"*{type} {blockName}";
-        var result = $"{z.Key:X8} - {index:0000} {type}";
+            //return $"*{type} {blockName}";
+            return $"{index:0000}\t{type}\t{blockName}";
+        //var result = $"{z.Key:X8} - {index:0000} {type}";
+        var result = $"{index:0000}\t{type}\t";
         if (z.Type is SCTypeCode.Object or SCTypeCode.Array)
             result += $" 0x{z.Data.Length:X3}";
         else if (!isBool)
@@ -104,13 +113,26 @@ public sealed class SCBlockMetadata
         }
 
         // See if it's a single-value declaration
+        string? outName = null;
+        if (ValueListExtras.TryGetValue(block.Key, out var blockNameExtras))
+        {
+            outName = blockNameExtras;
+        }
         if (ValueList.TryGetValue(block.Key, out var blockName))
         {
+            if (!string.IsNullOrEmpty(outName))
+            {
+                outName += $"\t{blockName}";
+            }
+            else
+            {
+                outName = $"\t{blockName}";
+            }
             saveBlock = null;
-            return blockName;
+            //return blockName;
         }
         saveBlock = null;
-        return null;
+        return outName;
     }
 
     /// <summary>

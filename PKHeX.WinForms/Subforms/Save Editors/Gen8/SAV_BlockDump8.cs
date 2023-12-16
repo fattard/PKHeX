@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows.Forms;
 using PKHeX.Core;
 using static PKHeX.Core.SCBlockUtil;
@@ -33,6 +34,14 @@ public partial class SAV_BlockDump8 : Form
         CB_Key.InitializeBinding();
         SortedBlockKeys = Metadata.GetSortedBlockKeyList().ToArray();
         CB_Key.DataSource = SortedBlockKeys;
+
+        StringBuilder sb = new StringBuilder();
+        foreach (var key in SortedBlockKeys)
+        {
+            sb.Append($"{key.Value.ToString("X8")}\t{key.Text}\n");
+        }
+
+        System.IO.File.WriteAllText("bl_dump.txt", sb.ToString());
 
         CB_TypeToggle.InitializeBinding();
         CB_TypeToggle.DataSource = new[]
