@@ -57,7 +57,7 @@ public partial class SAV_Database : Form
         var hdelta = newHeight - smallHeight;
         if (hdelta != 0)
             Height += hdelta;
-        PKXBOXES = grid.Entries.ToArray();
+        PKXBOXES = [.. grid.Entries];
 
         // Enable Scrolling when hovered over
         foreach (var slot in PKXBOXES)
@@ -130,8 +130,8 @@ public partial class SAV_Database : Form
 
     private readonly PictureBox[] PKXBOXES;
     private readonly string DatabasePath = Main.DatabasePath;
-    private List<SlotCache> Results = new();
-    private List<SlotCache> RawDB = new();
+    private List<SlotCache> Results = [];
+    private List<SlotCache> RawDB = [];
     private int slotSelected = -1; // = null;
     private Image? slotColor;
     private const int RES_MAX = 66;
@@ -285,13 +285,12 @@ public partial class SAV_Database : Form
         versions.RemoveAt(versions.Count - 1); // None
         CB_GameOrigin.DataSource = versions;
 
-        string[] hptypes = new string[GameInfo.Strings.types.Length - 2];
-        Array.Copy(GameInfo.Strings.types, 1, hptypes, 0, hptypes.Length);
+        var hptypes = GameInfo.Strings.types.AsSpan(1, HiddenPower.TypeCount);
         var types = Util.GetCBList(hptypes);
         types.Insert(0, comboAny);
         CB_HPType.DataSource = types;
 
-        // Set the Move ComboBoxes too..
+        // Set the Move ComboBoxes too.
         var moves = new List<ComboItem>(GameInfo.MoveDataSource);
         moves.RemoveAt(0);
         moves.Insert(0, comboAny);
@@ -348,16 +347,10 @@ public partial class SAV_Database : Form
         reportGrid.PopulateData(Results);
     }
 
-    private sealed class SearchFolderDetail
+    private sealed class SearchFolderDetail(string path, bool ignoreBackupFiles)
     {
-        public string Path { get; }
-        public bool IgnoreBackupFiles { get; }
-
-        public SearchFolderDetail(string path, bool ignoreBackupFiles)
-        {
-            Path = path;
-            IgnoreBackupFiles = ignoreBackupFiles;
-        }
+        public string Path { get; } = path;
+        public bool IgnoreBackupFiles { get; } = ignoreBackupFiles;
     }
 
     private void LoadDatabase()

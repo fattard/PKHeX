@@ -6,7 +6,7 @@ namespace PKHeX.Core;
 /// <summary>
 /// Pokédex structure used for <see cref="GameVersion.GG"/> games, slightly modified from <see cref="Zukan7"/>.
 /// </summary>>
-public sealed class Zukan7b : Zukan7
+public sealed class Zukan7b(SAV7b sav, int dex, int langflag) : Zukan7(sav, dex, langflag)
 {
     private const int UNSET = 0x007F00FE;
     private const int BaseOffset = 0x2A00;
@@ -16,10 +16,6 @@ public sealed class Zukan7b : Zukan7
 
     public const byte DefaultEntryValueH = 0xFE;
     public const byte DefaultEntryValueW = 0x7F;
-
-    public Zukan7b(SAV7b sav, int dex, int langflag) : base(sav, dex, langflag)
-    {
-    }
 
     public override void SetDex(PKM pk)
     {
@@ -66,7 +62,8 @@ public sealed class Zukan7b : Zukan7
         if (!TryGetSizeEntryIndex(species, form, out int index))
             return;
 
-        if (Math.Round(pk.HeightAbsolute) < pk.PersonalInfo.Height) // possible minimum height
+        var pi = PersonalTable.GG[species, form];
+        if (pk.HeightAbsolute < pi.Height) // possible minimum height
         {
             int ofs = GetDexSizeOffset(DexSizeType.MinHeight, index);
             var entry = SAV.Data.AsSpan(ofs, EntrySize);
@@ -74,7 +71,7 @@ public sealed class Zukan7b : Zukan7
             if (pk.HeightScalar < minHeight || IsUnset(entry))
                 SetSizeData(pk, DexSizeType.MinHeight);
         }
-        else if (Math.Round(pk.HeightAbsolute) > pk.PersonalInfo.Height) // possible maximum height
+        else if (pk.HeightAbsolute > pi.Height) // possible maximum height
         {
             int ofs = GetDexSizeOffset(DexSizeType.MaxHeight, index);
             var entry = SAV.Data.AsSpan(ofs, EntrySize);
@@ -83,8 +80,7 @@ public sealed class Zukan7b : Zukan7
                 SetSizeData(pk, DexSizeType.MaxHeight);
         }
 
-        var pi = PersonalTable.GG[species, form];
-        if (Math.Round(pk.WeightAbsolute) < pk.PersonalInfo.Weight) // possible minimum weight
+        if (pk.WeightAbsolute < pi.Weight) // possible minimum weight
         {
             int ofs = GetDexSizeOffset(DexSizeType.MinWeight, index);
             var entry = SAV.Data.AsSpan(ofs, EntrySize);
@@ -94,7 +90,7 @@ public sealed class Zukan7b : Zukan7
             if (pk.WeightAbsolute < calcWeight || IsUnset(entry))
                 SetSizeData(pk, DexSizeType.MinWeight);
         }
-        else if (Math.Round(pk.WeightAbsolute) > pk.PersonalInfo.Weight) // possible maximum weight
+        else if (pk.WeightAbsolute > pi.Weight) // possible maximum weight
         {
             int ofs = GetDexSizeOffset(DexSizeType.MaxWeight, index);
             var entry = SAV.Data.AsSpan(ofs, EntrySize);
@@ -176,8 +172,8 @@ public sealed class Zukan7b : Zukan7
         return false;
     }
 
-    private static ReadOnlySpan<byte> SizeDexInfoTable => new byte[]
-    {
+    private static ReadOnlySpan<byte> SizeDexInfoTable =>
+    [
         // species, form
         003, 1,
         006, 1,
@@ -212,7 +208,7 @@ public sealed class Zukan7b : Zukan7
         142, 1,
         150, 1,
         150, 2,
-    };
+    ];
 
     protected override bool GetSaneFormsToIterate(ushort species, out int formStart, out int formEnd, int formIn)
     {

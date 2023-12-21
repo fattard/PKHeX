@@ -94,7 +94,7 @@ public static class RibbonRules
             return true;
 
         // Legendaries can not compete in ranked yet.
-        if (evos.HasVisitedGen9 && IsRibbonValidMasterRankSV(pk))
+        if (evos.HasVisitedGen9 && IsRibbonValidMasterRankSV(enc))
             return true;
 
         return false;
@@ -119,7 +119,7 @@ public static class RibbonRules
                 return false;
         }
 
-        // Series 13 rule-set was the first time Ranked Battles allowed the use of Mythical Pokémon.
+        // Series 13 rule-set was the first rule-set that Ranked Battles allowed the use of Mythical Pokémon.
         // All species that can exist in SW/SH can compete in ranked.
         return true;
     }
@@ -135,8 +135,110 @@ public static class RibbonRules
             return false;
         if (SpeciesCategory.IsMythical(species))
             return false;
+        if (TempBanRegE.Contains(species))
+            return false;
         return true;
     }
+
+    private static ReadOnlySpan<ushort> TempBanRegE =>
+    [
+        0001, // Bulbasaur
+        0002, // Ivysaur
+        0003, // Venusaur
+        0007, // Squirtle
+        0008, // Wartortle
+        0009, // Blastoise
+        0043, // Oddish
+        0044, // Gloom
+        0045, // Vileplume
+        0084, // Doduo
+        0085, // Dodrio
+        0086, // Seel
+        0087, // Dewgong
+        0102, // Exeggcute
+        0103, // Exeggutor
+        0103, // Exeggutor
+        0106, // Hitmonlee
+        0107, // Hitmonchan
+        0111, // Rhyhorn
+        0112, // Rhydon
+        0126, // Magmar
+        0131, // Lapras
+        0152, // Chikorita
+        0153, // Bayleef
+        0154, // Meganium
+        0158, // Totodile
+        0159, // Croconaw
+        0160, // Feraligatr
+        0182, // Bellossom
+        0227, // Skarmory
+        0235, // Smeargle
+        0236, // Tyrogue
+        0237, // Hitmontop
+        0240, // Magby
+        0252, // Treecko
+        0253, // Grovyle
+        0254, // Sceptile
+        0255, // Torchic
+        0256, // Combusken
+        0257, // Blaziken
+        0258, // Mudkip
+        0259, // Marshtomp
+        0260, // Swampert
+        0328, // Trapinch
+        0329, // Vibrava
+        0330, // Flygon
+        0374, // Beldum
+        0375, // Metang
+        0376, // Metagross
+        0408, // Cranidos
+        0409, // Rampardos
+        0410, // Shieldon
+        0411, // Bastiodon
+        0464, // Rhyperior
+        0467, // Magmortar
+        0495, // Snivy
+        0496, // Servine
+        0497, // Serperior
+        0498, // Tepig
+        0499, // Pignite
+        0500, // Emboar
+        0522, // Blitzle
+        0523, // Zebstrika
+        0546, // Cottonee
+        0547, // Whimsicott
+        0572, // Minccino
+        0573, // Cinccino
+        0577, // Solosis
+        0578, // Duosion
+        0579, // Reuniclus
+        0622, // Golett
+        0623, // Golurk
+        0677, // Espurr
+        0678, // Meowstic
+        0686, // Inkay
+        0687, // Malamar
+        0725, // Litten
+        0726, // Torracat
+        0727, // Incineroar
+        0728, // Popplio
+        0729, // Brionne
+        0730, // Primarina
+        0731, // Pikipek
+        0732, // Trumbeak
+        0733, // Toucannon
+        0868, // Milcery
+        0869, // Alcremie
+        0884, // Duraludon
+
+        // New Species
+        (ushort)Archaludon,
+      //(ushort)Hydrapple,
+        (ushort)GougingFire,
+        (ushort)RagingBolt,
+        (ushort)IronBoulder,
+        (ushort)IronCrown,
+    ];
 
     /// <summary>
     /// Checks if the input can receive the <see cref="IRibbonSetCommon6.RibbonTraining"/> ribbon.
@@ -231,8 +333,8 @@ public static class RibbonRules
 
     // Derived from ROM data: true for all Footprint types besides 5 (5 = no feet).
     // If true, requires gaining 30 levels to obtain ribbon. If false, can obtain ribbon at any level.
-    private static ReadOnlySpan<bool> HasFootprintBDSP => new[]
-    {
+    private static ReadOnlySpan<bool> HasFootprintBDSP =>
+    [
         true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
         true, false,  true,  true, false,  true,  true,  true,  true,  true,
         true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
@@ -283,7 +385,7 @@ public static class RibbonRules
         true,  true,  true,  true, false,  true, false,  true,  true,  true,
         true,  true,  true,  true,  true,  true, false,  true,  true,  true,
         true,  true,  true,  true,
-    };
+    ];
 
     /// <summary>
     /// Checks if the input can receive the <see cref="IRibbonSetEvent3.RibbonNational"/> ribbon.
@@ -401,8 +503,8 @@ public static class RibbonRules
     /// <summary>
     /// Generation 3 &amp; 4 Battle Frontier Species banlist. When referencing this in context to generation 4, be sure to disallow <see cref="Pichu"/> with Form 1 (Spiky).
     /// </summary>
-    public static readonly HashSet<ushort> BattleFrontierBanlist = new()
-    {
+    public static readonly HashSet<ushort> BattleFrontierBanlist =
+    [
         (int)Mewtwo, (int)Mew,
         (int)Lugia, (int)HoOh, (int)Celebi,
         (int)Kyogre, (int)Groudon, (int)Rayquaza, (int)Jirachi, (int)Deoxys,
@@ -412,5 +514,5 @@ public static class RibbonRules
         (int)Cosmog, (int)Cosmoem, (int)Solgaleo, (int)Lunala, (int)Necrozma, (int)Magearna, (int)Marshadow, (int)Zeraora,
         (int)Meltan, (int)Melmetal,
         (int)Koraidon, (int)Miraidon,
-    };
+    ];
 }

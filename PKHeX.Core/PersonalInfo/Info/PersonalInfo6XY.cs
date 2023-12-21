@@ -6,12 +6,10 @@ namespace PKHeX.Core;
 /// <summary>
 /// <see cref="PersonalInfo"/> class with values from the X &amp; Y games.
 /// </summary>
-public sealed class PersonalInfo6XY : PersonalInfo, IPersonalAbility12H, IPersonalInfoTM, IPersonalInfoTutorType
+public sealed class PersonalInfo6XY(byte[] Data) : PersonalInfo, IPersonalAbility12H, IPersonalInfoTM, IPersonalInfoTutorType
 {
     public const int SIZE = 0x40;
-    private readonly byte[] Data;
 
-    public PersonalInfo6XY(byte[] data) => Data = data;
     public override byte[] Write() => Data;
 
     public override int HP { get => Data[0x00]; set => Data[0x00] = (byte)value; }
@@ -111,8 +109,7 @@ public sealed class PersonalInfo6XY : PersonalInfo, IPersonalAbility12H, IPerson
 
     public void SetIsLearnTutorType(int index, bool value)
     {
-        if ((uint)index >= TypeTutorCount)
-            throw new ArgumentOutOfRangeException(nameof(index), index, null);
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual<uint>((uint)index, TypeTutorCount);
         if (value)
             Data[TypeTutor + (index >> 3)] |= (byte)(1 << (index & 7));
         else

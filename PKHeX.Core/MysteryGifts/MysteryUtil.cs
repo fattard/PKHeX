@@ -46,7 +46,7 @@ public static class MysteryUtil
     public static IEnumerable<string> GetDescription(this MysteryGift gift, IBasicStrings strings)
     {
         if (gift.Empty)
-            return new[] { MsgMysteryGiftSlotEmpty };
+            return [MsgMysteryGiftSlotEmpty];
 
         var result = new List<string> { gift.CardHeader };
         if (gift.IsItem)
@@ -89,7 +89,7 @@ public static class MysteryUtil
         return result;
     }
 
-    private static void AddLinesItem(MysteryGift gift, IBasicStrings strings, ICollection<string> result)
+    private static void AddLinesItem(MysteryGift gift, IBasicStrings strings, List<string> result)
     {
         result.Add($"Item: {strings.Item[gift.ItemID]} (Quantity: {gift.Quantity})");
         if (gift is not WC7 wc7)
@@ -101,7 +101,7 @@ public static class MysteryUtil
         }
     }
 
-    private static void AddLinesPKM(MysteryGift gift, IBasicStrings strings, ICollection<string> result)
+    private static void AddLinesPKM(MysteryGift gift, IBasicStrings strings, List<string> result)
     {
         var id = gift.Generation < 7 ? $"{gift.TID16:D5}/{gift.SID16:D5}" : $"[{gift.TrainerSID7:D4}]{gift.TrainerTID7:D6}";
 

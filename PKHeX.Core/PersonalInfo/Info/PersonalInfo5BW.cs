@@ -6,12 +6,10 @@ namespace PKHeX.Core;
 /// <summary>
 /// <see cref="PersonalInfo"/> class with values from the Black &amp; White games.
 /// </summary>
-public sealed class PersonalInfo5BW : PersonalInfo, IPersonalAbility12H, IPersonalInfoTM, IPersonalInfoTutorType
+public sealed class PersonalInfo5BW(byte[] Data) : PersonalInfo, IPersonalAbility12H, IPersonalInfoTM, IPersonalInfoTutorType
 {
     public const int SIZE = 0x3C;
-    private readonly byte[] Data;
 
-    public PersonalInfo5BW(byte[] data) => Data = data;
     public override byte[] Write() => Data;
 
     public override int HP { get => Data[0x00]; set => Data[0x00] = (byte)value; }
@@ -82,8 +80,7 @@ public sealed class PersonalInfo5BW : PersonalInfo, IPersonalAbility12H, IPerson
 
     public void SetIsLearnTM(int index, bool value)
     {
-        if ((uint)index >= CountTMHM)
-            throw new ArgumentOutOfRangeException(nameof(index), index, null);
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual<uint>((uint)index, CountTMHM);
         if (value)
             Data[TMHM + (index >> 3)] |= (byte)(1 << (index & 7));
         else
@@ -99,8 +96,7 @@ public sealed class PersonalInfo5BW : PersonalInfo, IPersonalAbility12H, IPerson
 
     public void SetIsLearnTutorType(int index, bool value)
     {
-        if ((uint)index >= TypeTutorsCount)
-            throw new ArgumentOutOfRangeException(nameof(index), index, null);
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual<uint>((uint)index, TypeTutorsCount);
         if (value)
             Data[TypeTutors + (index >> 3)] |= (byte)(1 << (index & 7));
         else

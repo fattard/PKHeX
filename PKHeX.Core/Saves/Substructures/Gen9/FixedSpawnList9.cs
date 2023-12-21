@@ -6,14 +6,9 @@ using static System.Buffers.Binary.BinaryPrimitives;
 namespace PKHeX.Core;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public sealed class FixedSpawnList9 : SaveBlock<SAV9SV>
+public sealed class FixedSpawnList9(SAV9SV sav, SCBlock block) : SaveBlock<SAV9SV>(sav, block.Data)
 {
-    public readonly int CountAll;
-
-    public FixedSpawnList9(SAV9SV sav, SCBlock block) : base(sav, block.Data)
-    {
-        CountAll = block.Data.Length / FixedSpawnDetail.SIZE;
-    }
+    public readonly int CountAll = block.Data.Length / FixedSpawnDetail.SIZE;
 
     public FixedSpawnDetail GetSpawn(int entry) => new(Data, entry * FixedSpawnDetail.SIZE);
 
@@ -32,8 +27,7 @@ public sealed class FixedSpawnList9 : SaveBlock<SAV9SV>
         get => GetAllEntities();
         set
         {
-            if (value.Length != CountAll)
-                throw new ArgumentException(nameof(value));
+            ArgumentOutOfRangeException.ThrowIfNotEqual(value.Length, CountAll);
             for (int i = 0; i < value.Length; i++)
                 GetSpawn(i).Entity = value[i];
         }
@@ -48,18 +42,9 @@ public sealed class FixedSpawnList9 : SaveBlock<SAV9SV>
     }
 }
 
-public sealed class FixedSpawnDetail
+public sealed class FixedSpawnDetail(byte[] Data, int Offset)
 {
     public const int SIZE = 0x170;
-
-    private readonly byte[] Data;
-    private readonly int Offset;
-
-    public FixedSpawnDetail(byte[] data, int ofs)
-    {
-        Data = data;
-        Offset = ofs;
-    }
 
     private const string General = nameof(General);
     private const string Misc = nameof(Misc);
@@ -81,7 +66,7 @@ public sealed class FixedSpawnDetail
     [Category(General), Description("Encrypted Entity data.")]
     public PK9 Entity
     {
-        get => new(Data.Slice(Offset + 0x09, PokeCrypto.SIZE_9PARTY));
+        get => new(Data.AsSpan(Offset + 0x09, PokeCrypto.SIZE_9PARTY).ToArray());
         set => value.EncryptedPartyData.CopyTo(Data, Offset + 0x09);
     }
 

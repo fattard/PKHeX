@@ -226,16 +226,8 @@ public abstract class SAV3 : SaveFile, ILangDeviantSave, IEventFlag37
             return;
 
         // Hall of Fame Checksums
-        {
-            var sector = Data.AsSpan(0x1C000, SIZE_SECTOR);
-            ushort chk = Checksums.CheckSum32(sector[..SIZE_SECTOR_USED]);
-            WriteUInt16LittleEndian(sector[0xFF4..], chk);
-        }
-        {
-            var sector = Data.AsSpan(0x1D000, SIZE_SECTOR);
-            ushort chk = Checksums.CheckSum32(sector[..SIZE_SECTOR_USED]);
-            WriteUInt16LittleEndian(sector[0xFF4..], chk);
-        }
+        SetSectoryValidExtra(0x1C000);
+        SetSectoryValidExtra(0x1D000);
     }
 
     public sealed override bool ChecksumsValid
@@ -259,9 +251,16 @@ public abstract class SAV3 : SaveFile, ILangDeviantSave, IEventFlag37
         }
     }
 
-    private bool IsSectorValidExtra(int ofs)
+    private void SetSectoryValidExtra(int offset)
     {
-        var sector = Data.AsSpan(ofs, SIZE_SECTOR);
+        var sector = Data.AsSpan(offset, SIZE_SECTOR);
+        var expect = Checksums.CheckSum32(sector[..SIZE_SECTOR_USED]);
+        WriteUInt16LittleEndian(sector[0xFF4..], expect);
+    }
+
+    private bool IsSectorValidExtra(int offset)
+    {
+        var sector = Data.AsSpan(offset, SIZE_SECTOR);
         var expect = Checksums.CheckSum32(sector[..SIZE_SECTOR_USED]);
         var actual = ReadUInt16LittleEndian(sector[0xFF4..]);
         return expect == actual;
@@ -297,6 +296,21 @@ public abstract class SAV3 : SaveFile, ILangDeviantSave, IEventFlag37
             }
             return list.Count != 0 ? string.Join(Environment.NewLine, list) : "Checksums are valid.";
         }
+    }
+
+    public static bool IsMail(int itemID) => (uint)(itemID - 121) <= (132 - 121);
+
+    protected override void SetPartyValues(PKM pk, bool isParty)
+    {
+        if (pk is not PK3 p3)
+            return;
+
+        // If no mail ID is set, ensure it is set to 0xFF for party and 0x00 for box format.
+        // Box format doesn't store this value, but set it anyway for clarity.
+        if (!IsMail(p3.HeldItem))
+            p3.HeldMailID = isParty ? (sbyte)-1 : (sbyte)0;
+
+        base.SetPartyValues(pk, isParty);
     }
 
     public abstract uint SecurityKey { get; set; }
@@ -594,20 +608,18 @@ public abstract class SAV3 : SaveFile, ILangDeviantSave, IEventFlag37
     public MailDetail GetMail(int mailIndex)
     {
         var ofs = GetMailOffset(mailIndex);
-        var data = Large.Slice(ofs, Mail3.SIZE);
+        var data = Large.AsSpan(ofs, Mail3.SIZE).ToArray();
         return new Mail3(data, ofs, Japanese);
     }
 
     #region eBerry
-    public abstract byte[] GetEReaderBerry();
-    public abstract void SetEReaderBerry(ReadOnlySpan<byte> data);
-    public abstract string EBerryName { get; }
-    public abstract bool IsEBerryEngima { get; }
+    public abstract Span<byte> EReaderBerry();
+    public string EBerryName => GetString(EReaderBerry()[..7]);
+    public bool IsEBerryEngima => EReaderBerry()[0] is 0 or 0xFF;
     #endregion
 
     #region eTrainer
-    public abstract byte[] GetEReaderTrainer();
-    public abstract void SetEReaderTrainer(ReadOnlySpan<byte> data);
+    public abstract Span<byte> EReaderTrainer();
     #endregion
 
     public abstract Gen3MysteryData MysteryData { get; set; }
@@ -623,8 +635,7 @@ public abstract class SAV3 : SaveFile, ILangDeviantSave, IEventFlag37
 
     public void SetHallOfFameData(ReadOnlySpan<byte> value)
     {
-        if (value.Length != SIZE_SECTOR_USED * 2)
-            throw new ArgumentException("Invalid size", nameof(value));
+        ArgumentOutOfRangeException.ThrowIfNotEqual(value.Length, SIZE_SECTOR_USED * 2);
         // HoF Data is split across two sav sectors
         Span<byte> savedata = Data;
         value[..SIZE_SECTOR_USED].CopyTo(savedata[0x1C000..]);

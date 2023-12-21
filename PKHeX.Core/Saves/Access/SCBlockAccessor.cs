@@ -54,6 +54,9 @@ public abstract class SCBlockAccessor : ISaveBlockAccessor<SCBlock>
     /// <returns>True if found, false if not found.</returns>
     public bool TryGetBlock(uint key, [NotNullWhen(true)] out SCBlock? block) => TryFind(BlockInfo, key, out block);
 
+    /// <inheritdoc cref="TryGetBlock(uint, out SCBlock)"/>
+    public bool TryGetBlock(ReadOnlySpan<char> name, [NotNullWhen(true)] out SCBlock? block) => TryGetBlock(Hash(name), out block);
+
     /// <summary>
     /// Tries to grab the actual block, and returns a new dummy if the block does not exist.
     /// </summary>
@@ -113,8 +116,10 @@ public abstract class SCBlockAccessor : ISaveBlockAccessor<SCBlock>
         var index = FindIndex(array, key);
         if (index != -1)
             return array[index];
-        return new SCBlock(0, SCTypeCode.None);
+        return GetFakeBlock();
     }
+
+    protected static SCBlock GetFakeBlock() => new(0, SCTypeCode.None);
 
     /// <summary>
     /// Finds a specified <see cref="key"/> within the <see cref="array"/>.

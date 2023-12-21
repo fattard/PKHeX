@@ -11,19 +11,23 @@ public sealed class RaidSpawnList9 : SaveBlock<SAV9SV>
     public readonly int CountUsed;
     public const int RaidCountLegal_T0 = 72;
     public const int RaidCountLegal_T1 = 100;
+    public const int RaidCountLegal_T2 = 80;
     public readonly bool HasSeeds;
     private readonly int OffsetRaidStart;
+    private readonly Memory<byte> Memory;
+    private Span<byte> Span => Memory.Span;
 
-    public RaidSpawnList9(SAV9SV sav, SCBlock block, int countUsed, bool hasSeeds) : base(sav, block.Data)
+    public RaidSpawnList9(SAV9SV sav, SCBlock block, Memory<byte> memory, int countUsed, bool hasSeeds) : base(sav, block.Data)
     {
-        var length = block.Data.Length;
+        Memory = memory;
+        var length = memory.Length;
         HasSeeds = hasSeeds;
         OffsetRaidStart = hasSeeds ? 0x10 : 0;
         CountAll = length == 0 ? 0 : (length - OffsetRaidStart) / TeraRaidDetail.SIZE;
         CountUsed = countUsed;
     }
 
-    public TeraRaidDetail GetRaid(int entry) => new(Data.AsMemory(GetOffset(entry), TeraRaidDetail.SIZE));
+    public TeraRaidDetail GetRaid(int entry) => new(Memory.Slice(GetOffset(entry), TeraRaidDetail.SIZE));
 
     private int GetOffset(int entry) => OffsetRaidStart + (entry * TeraRaidDetail.SIZE);
 
@@ -37,14 +41,14 @@ public sealed class RaidSpawnList9 : SaveBlock<SAV9SV>
 
     public ulong CurrentSeed
     {
-        get => HasSeeds ? ReadUInt64LittleEndian(Data.AsSpan(0x00)) : 0;
-        set { if (HasSeeds) WriteUInt64LittleEndian(Data.AsSpan(0x00), value); }
+        get => HasSeeds ? ReadUInt64LittleEndian(Span) : 0;
+        set { if (HasSeeds) WriteUInt64LittleEndian(Span, value); }
     }
 
     public ulong TomorrowSeed
     {
-        get => HasSeeds ? ReadUInt64LittleEndian(Data.AsSpan(0x08)) : 0;
-        set { if (HasSeeds) WriteUInt64LittleEndian(Data.AsSpan(0x08), value); }
+        get => HasSeeds ? ReadUInt64LittleEndian(Span[0x8..]) : 0;
+        set { if (HasSeeds) WriteUInt64LittleEndian(Span[0x8..], value); }
     }
 
     /// <summary>
@@ -69,14 +73,11 @@ public sealed class RaidSpawnList9 : SaveBlock<SAV9SV>
     }
 }
 
-public sealed class TeraRaidDetail
+public sealed class TeraRaidDetail(Memory<byte> Data)
 {
     public const int SIZE = 0x20;
 
-    private readonly Memory<byte> Data;
     private Span<byte> Span => Data.Span;
-
-    public TeraRaidDetail(Memory<byte> data) => Data = data;
 
     private const string General = nameof(General);
     private const string Misc = nameof(Misc);

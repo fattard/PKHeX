@@ -37,16 +37,19 @@ public sealed class SAV3Colosseum : SaveFile, IGCSaveFile
     private int Memo;
 
     private readonly byte[] BAK;
+    private readonly bool Japanese;
 
-    public SAV3Colosseum() : base(SaveUtil.SIZE_G3COLO)
+    public SAV3Colosseum(bool japanese = false) : base(SaveUtil.SIZE_G3COLO)
     {
-        BAK = Array.Empty<byte>();
+        Japanese = japanese;
+        BAK = [];
         StrategyMemo = Initialize();
         ClearBoxes();
     }
 
     public SAV3Colosseum(byte[] data) : base(data)
     {
+        Japanese = data[0] == 0x83; // Japanese game name first character
         BAK = data;
         InitializeData();
         StrategyMemo = Initialize();
@@ -158,8 +161,7 @@ public sealed class SAV3Colosseum : SaveFile, IGCSaveFile
 
     private static byte[] EncryptColosseum(ReadOnlySpan<byte> input, Span<byte> digest)
     {
-        if (input.Length != SLOT_SIZE)
-            throw new ArgumentException("Incorrect slot size", nameof(input));
+        ArgumentOutOfRangeException.ThrowIfNotEqual(input.Length, SLOT_SIZE);
 
         byte[] output = input.ToArray();
 
@@ -182,8 +184,7 @@ public sealed class SAV3Colosseum : SaveFile, IGCSaveFile
 
     private static byte[] DecryptColosseum(ReadOnlySpan<byte> input, Span<byte> digest)
     {
-        if (input.Length != SLOT_SIZE)
-            throw new ArgumentException("Incorrect slot size", nameof(input));
+        ArgumentOutOfRangeException.ThrowIfNotEqual(input.Length, SLOT_SIZE);
 
         byte[] output = input.ToArray();
 
@@ -308,6 +309,8 @@ public sealed class SAV3Colosseum : SaveFile, IGCSaveFile
 
         ck3.CurrentRegion = (byte)CurrentRegion;
         ck3.OriginalRegion = (byte)OriginalRegion;
+
+        ck3.ForceCorrectFatefulState(Japanese, ck3.FatefulEncounter);
     }
 
     protected override void SetDex(PKM pk)
@@ -385,14 +388,14 @@ public sealed class SAV3Colosseum : SaveFile, IGCSaveFile
         {
             var info = ItemStorage3Colo.Instance;
             InventoryPouch[] pouch =
-            {
+            [
                 new InventoryPouch3GC(InventoryType.Items, info, 99, 0x007F8, 20), // 20 COLO, 30 XD
                 new InventoryPouch3GC(InventoryType.KeyItems, info, 1, 0x00848, 43),
                 new InventoryPouch3GC(InventoryType.Balls, info, 99, 0x008F4, 16),
                 new InventoryPouch3GC(InventoryType.TMHMs, info, 99, 0x00934, 64), // no HMs
                 new InventoryPouch3GC(InventoryType.Berries, info, 999, 0x00A34, 46),
                 new InventoryPouch3GC(InventoryType.Medicine, info, 99, 0x00AEC, 3), // Cologne
-            };
+            ];
             return pouch.LoadAll(Data);
         }
         set => value.SaveAll(Data);

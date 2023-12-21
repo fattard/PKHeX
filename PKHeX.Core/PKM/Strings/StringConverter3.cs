@@ -9,6 +9,8 @@ public static class StringConverter3
 {
     private const byte TerminatorByte = 0xFF;
     private const char Terminator = (char)TerminatorByte;
+    private const char Apostrophe = '\''; // ’
+    private const byte ApostropheByte = 0xB4;
 
     /// <summary>
     /// Converts a Generation 3 encoded value array to string.
@@ -68,8 +70,8 @@ public static class StringConverter3
         for (; i < value.Length; i++)
         {
             var chr = value[i];
-            if (chr == '\'') // ’
-                return 0xB4;
+            if (chr == Apostrophe) // ’
+                return ApostropheByte;
             var b = (byte)table.IndexOf(chr);
             if (b == TerminatorByte)
                 break;
@@ -102,15 +104,15 @@ public static class StringConverter3
     /// <returns>Generation 3 encoded value.</returns>
     public static byte SetG3Char(char chr, bool jp)
     {
-        if (chr == '\'') // ’
-            return 0xB4;
+        if (chr == Apostrophe)
+            return ApostropheByte;
         var table = jp ? G3_JP : G3_EN;
         var index = table.IndexOf(chr);
         return (byte)index;
     }
 
-    private static ReadOnlySpan<char> G3_EN => new[]
-    {
+    private static ReadOnlySpan<char> G3_EN =>
+    [
         ' ',  'À',  'Á',  'Â', 'Ç',  'È',  'É',  'Ê',  'Ë',  'Ì', 'こ', 'Î',  'Ï',  'Ò',  'Ó',  'Ô',  // 0
         'Œ',  'Ù',  'Ú',  'Û', 'Ñ',  'ß',  'à',  'á',  'ね', 'Ç',  'È', 'é',  'ê',  'ë',  'ì',  'í',  // 1
         'î',  'ï',  'ò',  'ó', 'ô',  'œ',  'ù',  'ú',  'û',  'ñ',  'º', 'ª',  '⒅', '&',  '+',  'あ', // 2
@@ -130,10 +132,10 @@ public static class StringConverter3
 
         // Make the total length 256 so that any byte access is always within the array
         Terminator, Terminator, Terminator, Terminator, Terminator, Terminator, Terminator, Terminator, Terminator,
-    };
+    ];
 
-    private static ReadOnlySpan<char> G3_JP => new[]
-    {
+    private static ReadOnlySpan<char> G3_JP =>
+    [
         '　', 'あ', 'い', 'う', 'え', 'お', 'か', 'き', 'く', 'け', 'こ', 'さ', 'し', 'す', 'せ', 'そ', // 0
         'た', 'ち', 'つ', 'て', 'と', 'な', 'に', 'ぬ', 'ね', 'の', 'は', 'ひ', 'ふ', 'へ', 'ほ', 'ま', // 1
         'み', 'む', 'め', 'も', 'や', 'ゆ', 'よ', 'ら', 'り', 'る', 'れ', 'ろ', 'わ', 'を', 'ん', 'ぁ', // 2
@@ -153,5 +155,5 @@ public static class StringConverter3
 
         // Make the total length 256 so that any byte access is always within the array
         Terminator, Terminator, Terminator, Terminator, Terminator, Terminator, Terminator, Terminator, Terminator,
-    };
+    ];
 }

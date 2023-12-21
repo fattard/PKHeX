@@ -30,10 +30,10 @@ public sealed class MarkVerifier : Verifier
 
     private void VerifyNoMarksPresent(LegalityAnalysis data, IRibbonIndex m)
     {
-        for (var x = MarkLunchtime; x <= MarkSlump; x++)
+        for (var mark = MarkLunchtime; mark <= MarkSlump; mark++)
         {
-            if (m.GetRibbon((int)x))
-                data.AddLine(GetInvalid(string.Format(LRibbonMarkingFInvalid_0, GetRibbonNameSafe(x))));
+            if (m.GetRibbon((int)mark))
+                data.AddLine(GetInvalid(string.Format(LRibbonMarkingFInvalid_0, GetRibbonNameSafe(mark))));
         }
     }
 
@@ -131,7 +131,7 @@ public sealed class MarkVerifier : Verifier
 
     private static bool IsMoveSetEvolvedShedinja(PKM pk)
     {
-        // Check for gen3/4 exclusive moves that are Ninjask glitch only.
+        // Check for Gen3/4 exclusive moves that are Ninjask glitch only.
         if (pk.HasMove((int) Move.Screech))
             return true;
         if (pk.HasMove((int) Move.SwordsDance))

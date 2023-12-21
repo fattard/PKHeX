@@ -29,8 +29,8 @@ public sealed class SCBlockMetadata
         AddExtraKeyNames(ValueListExtras, extraKeyNames);
         if (exclusions.Length > 0)
         {
-            ValueList = ValueList.Where(z => !exclusions.Any(z.Value.Contains)).ToDictionary(z => z.Key, z => z.Value);
-            ValueListExtras = ValueListExtras.Where(z => !exclusions.Any(z.Value.Contains)).ToDictionary(z => z.Key, z => z.Value);
+            ValueList = ValueList.Where(z => !exclusions.Any(z.Value.Contains)).ToDictionary();
+            ValueListExtras = ValueListExtras.Where(z => !exclusions.Any(z.Value.Contains)).ToDictionary();
         }
         Accessor = accessor;
     }
@@ -136,7 +136,7 @@ public sealed class SCBlockMetadata
     }
 
     /// <summary>
-    /// Returns an object that wraps the block with a Value property to get/set via a PropertyGrid/etc control.
+    /// Returns an object that wraps the block with a Value property to get/set via a PropertyGrid/etc. control.
     /// </summary>
     /// <returns>Returns null if no wrapping is supported.</returns>
     public static object? GetEditableBlockObject(SCBlock block) => block.Type switch
@@ -157,10 +157,9 @@ public sealed class SCBlockMetadata
         _ => null,
     };
 
-    private sealed class WrappedValueView<T> where T : struct
+    private sealed class WrappedValueView<T>(SCBlock Parent, object currentValue) where T : struct
     {
-        private readonly SCBlock Parent;
-        private T _value;
+        private T _value = (T)Convert.ChangeType(currentValue, typeof(T));
 
         [Description("Stored Value for this Block")]
         public T Value
@@ -171,12 +170,8 @@ public sealed class SCBlockMetadata
 
         // ReSharper disable once UnusedMember.Local
         [Description("Type of Value this Block stores")]
+#pragma warning disable CA1822
         public string ValueType => typeof(T).Name;
-
-        public WrappedValueView(SCBlock block, object currentValue)
-        {
-            Parent = block;
-            _value = (T)Convert.ChangeType(currentValue, typeof(T));
-        }
+#pragma warning restore CA1822
     }
 }

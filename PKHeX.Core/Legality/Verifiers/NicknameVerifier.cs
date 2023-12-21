@@ -34,10 +34,11 @@ public sealed class NicknameVerifier : Verifier
             VerifyFixedNicknameEncounter(data, n, enc, pk, nickname);
             if (pk.IsEgg)
                 VerifyNicknameEgg(data);
-            return;
+            if (pk.IsNicknamed)
+                return;
         }
 
-        if (pk is { Format: <= 7, IsNicknamed: true }) // can nickname afterwards
+        if (pk is { Format: <= 7, IsNicknamed: true }) // can nickname afterward
         {
             if (pk.VC)
                 VerifyG1NicknameWithinBounds(data, nickname);

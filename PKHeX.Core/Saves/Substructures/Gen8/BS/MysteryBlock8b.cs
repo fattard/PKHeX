@@ -94,8 +94,7 @@ public sealed class MysteryBlock8b : SaveBlock<SAV8BS>
     }
     private void SetReceived(IReadOnlyList<RecvData8b> value)
     {
-        if (value.Count != RecvDataMax)
-            throw new ArgumentOutOfRangeException(nameof(value.Count));
+        ArgumentOutOfRangeException.ThrowIfNotEqual(value.Count, RecvDataMax);
         for (int i = 0; i < value.Count; i++)
             SetReceived(i, value[i]);
     }
@@ -117,8 +116,7 @@ public sealed class MysteryBlock8b : SaveBlock<SAV8BS>
     }
     private void SetFlags(IReadOnlyList<bool> value)
     {
-        if (value.Count != FlagSize)
-            throw new ArgumentOutOfRangeException(nameof(value.Count));
+        ArgumentOutOfRangeException.ThrowIfNotEqual(value.Count, FlagSize);
         for (int i = 0; i < value.Count; i++)
             SetFlag(i, value[i]);
     }
@@ -141,8 +139,7 @@ public sealed class MysteryBlock8b : SaveBlock<SAV8BS>
 
     private void SetOneDay(IReadOnlyList<OneDay8b> value)
     {
-        if (value.Count != OneDayMax)
-            throw new ArgumentOutOfRangeException(nameof(value.Count));
+        ArgumentOutOfRangeException.ThrowIfNotEqual(value.Count, OneDayMax);
         for (int i = 0; i < value.Count; i++)
             SetOneDay(i, value[i]);
     }
@@ -150,23 +147,14 @@ public sealed class MysteryBlock8b : SaveBlock<SAV8BS>
 }
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public sealed class RecvData8b
+public sealed class RecvData8b(byte[] Data, int Offset = 0)
 {
     public const int SIZE = 0xE0;
     // private const int ItemCount = 7;
     // private const int DressIDCount = 7;
 
-    private readonly int Offset;
-    private readonly byte[] Data;
-
-    public RecvData8b(byte[] data, int offset = 0)
-    {
-        Data = data;
-        Offset = offset;
-    }
-
     public override string ToString() => $"{DeliveryID:0000} @ {LocalTimestamp:F}";
-    public void CopyTo(Span<byte> destination, int offset) => Data.AsSpan(Offset, SIZE).CopyTo(destination[offset..]);
+    public void CopyTo(Span<byte> destination, int offset1) => Data.AsSpan(Offset, SIZE).CopyTo(destination[offset1..]);
     public void Clear() => Data.AsSpan(Offset, SIZE).Clear();
 
     public long Ticks { get => ReadInt64LittleEndian(Data.AsSpan(Offset)); set => WriteInt64LittleEndian(Data.AsSpan(Offset), value); }
@@ -234,22 +222,13 @@ public sealed class RecvData8b
 }
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public sealed class OneDay8b
+public sealed class OneDay8b(byte[] Data, int Offset = 0)
 {
     public const int SIZE = 0x10;
 
-    private readonly int Offset;
-    private readonly byte[] Data;
-
-    public OneDay8b(byte[] data, int offset = 0)
-    {
-        Data = data;
-        Offset = offset;
-    }
-
     public override string ToString() => $"{DeliveryID:0000} @ {LocalTimestamp:F}";
 
-    public void CopyTo(Span<byte> destination, int offset) => Data.AsSpan(Offset, SIZE).CopyTo(destination[offset..]);
+    public void CopyTo(Span<byte> destination, int offset1) => Data.AsSpan(Offset, SIZE).CopyTo(destination[offset1..]);
     public void Clear() => Data.AsSpan(Offset, SIZE).Clear();
 
     public long Ticks { get => ReadInt64LittleEndian(Data.AsSpan(Offset)); set => WriteInt64LittleEndian(Data.AsSpan(Offset), value); }

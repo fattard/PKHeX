@@ -264,7 +264,7 @@ public abstract class G8PKM : PKM, ISanityChecksum,
     public bool RibbonMarkAlpha       { get => FlagUtil.GetFlag(Data, 0x45, 3); set => FlagUtil.SetFlag(Data, 0x45, 3, value); }
     public bool RibbonMarkMightiest   { get => FlagUtil.GetFlag(Data, 0x45, 4); set => FlagUtil.SetFlag(Data, 0x45, 4, value); }
     public bool RibbonMarkTitan       { get => FlagUtil.GetFlag(Data, 0x45, 5); set => FlagUtil.SetFlag(Data, 0x45, 5, value); }
-    public bool RIB45_6 { get => FlagUtil.GetFlag(Data, 0x45, 6); set => FlagUtil.SetFlag(Data, 0x45, 6, value); }
+    public bool RibbonPartner         { get => FlagUtil.GetFlag(Data, 0x45, 6); set => FlagUtil.SetFlag(Data, 0x45, 6, value); }
     public bool RIB45_7 { get => FlagUtil.GetFlag(Data, 0x45, 7); set => FlagUtil.SetFlag(Data, 0x45, 7, value); }
 
     public bool RIB46_0 { get => FlagUtil.GetFlag(Data, 0x46, 0); set => FlagUtil.SetFlag(Data, 0x46, 0, value); }
@@ -377,7 +377,7 @@ public abstract class G8PKM : PKM, ISanityChecksum,
     public Span<byte> PokeJob => Data.AsSpan(0xCE, 14);
     public bool GetPokeJobFlag(int index) => FlagUtil.GetFlag(PokeJob, index >> 3, index & 7);
     public void SetPokeJobFlag(int index, bool value) => FlagUtil.SetFlag(PokeJob, index >> 3, index & 7, value);
-    public bool GetPokeJobFlagAny() => PokeJob.IndexOfAnyExcept<byte>(0) >= 0;
+    public bool GetPokeJobFlagAny() => PokeJob.ContainsAnyExcept<byte>(0);
     public void ClearPokeJobFlags() => PokeJob.Clear();
 
     public override byte Fullness { get => Data[0xDC]; set => Data[0xDC] = value; }
@@ -432,7 +432,7 @@ public abstract class G8PKM : PKM, ISanityChecksum,
     public Span<byte> RecordFlags => Data.AsSpan(0x127, 14);
     public bool GetMoveRecordFlag(int index) => FlagUtil.GetFlag(RecordFlags, index >> 3, index & 7);
     public void SetMoveRecordFlag(int index, bool value) => FlagUtil.SetFlag(RecordFlags, index >> 3, index & 7, value);
-    public bool GetMoveRecordFlagAny() => RecordFlags.IndexOfAnyExcept<byte>(0) >= 0;
+    public bool GetMoveRecordFlagAny() => RecordFlags.ContainsAnyExcept<byte>(0);
     public void ClearMoveRecordFlags() => RecordFlags.Clear();
 
     // Why did you mis-align this field, GameFreak?

@@ -6,8 +6,10 @@ namespace PKHeX.Core;
 /// <summary>
 /// Generation 4 Mystery Gift Template File (Inner Gift Data, no card data)
 /// </summary>
-public sealed class PGT : DataMysteryGift, IRibbonSetEvent3, IRibbonSetEvent4, IRandomCorrelation
+public sealed class PGT(byte[] Data) : DataMysteryGift(Data), IRibbonSetEvent3, IRibbonSetEvent4, IRandomCorrelation
 {
+    public PGT() : this(new byte[Size]) { }
+
     public const int Size = 0x104; // 260
     public override int Generation => 4;
     public override EntityContext Context => EntityContext.Gen4;
@@ -50,9 +52,6 @@ public sealed class PGT : DataMysteryGift, IRibbonSetEvent3, IRibbonSetEvent4, I
     public override bool GiftUsed { get => false; set { } }
     public override Shiny Shiny => IsEgg ? Shiny.Random : PK.PID == 1 ? Shiny.Never : IsShiny ? Shiny.Always : Shiny.Never;
 
-    public PGT() : this(new byte[Size]) { }
-    public PGT(byte[] data) : base(data) { }
-
     public byte CardType { get => Data[0]; set => Data[0] = value; }
     // Unused 0x01
     public byte Slot { get => Data[2]; set => Data[2] = value; }
@@ -61,7 +60,7 @@ public sealed class PGT : DataMysteryGift, IRibbonSetEvent3, IRibbonSetEvent4, I
 
     public PK4 PK
     {
-        get => _pk ??= new PK4(Data.Slice(8, PokeCrypto.SIZE_4PARTY));
+        get => _pk ??= new PK4(Data.AsSpan(8, PokeCrypto.SIZE_4PARTY).ToArray());
         set
         {
             _pk = value;
@@ -84,7 +83,7 @@ public sealed class PGT : DataMysteryGift, IRibbonSetEvent3, IRibbonSetEvent4, I
     private PK4? _pk;
 
     /// <summary>
-    /// Double checks the encryption of the gift data for Pokemon data.
+    /// Double-checks the encryption of the gift data for Pokémon data.
     /// </summary>
     /// <returns>True if data was encrypted, false if the data was not modified.</returns>
     public bool VerifyPKEncryption()
@@ -322,25 +321,17 @@ public sealed class PGT : DataMysteryGift, IRibbonSetEvent3, IRibbonSetEvent4, I
 
     private static bool IsG4ManaphyPIDValid(PIDType val, PKM pk)
     {
+        // Unhatched: Can't trigger ARNG, so it must always be Method 1
         if (pk.IsEgg)
-        {
-            if (pk.IsShiny)
-                return false;
-            if (val == PIDType.Method_1)
-                return true;
-            return val == PIDType.G4MGAntiShiny && IsAntiShinyARNG(pk);
-        }
+            return val == PIDType.Method_1;
 
+        // Hatching: Code checks if the TID/SID yield a shiny, and re-roll until not shiny.
+        // However, the TID/SID reference is stale (original OT, not hatching OT), so it's fallible.
+        // Hatched: Can't be shiny for an un-traded egg.
         if (val == PIDType.Method_1)
-            return pk.WasTradedEgg || !pk.IsShiny; // can't be shiny on received game
-        return val == PIDType.G4MGAntiShiny && (pk.WasTradedEgg || IsAntiShinyARNG(pk));
+            return pk.WasTradedEgg || !pk.IsShiny;
 
-        static bool IsAntiShinyARNG(PKM pk)
-        {
-            var shinyPID = ARNG.Prev(pk.PID);
-            var tmp = pk.ID32 ^ shinyPID;
-            var xor = (ushort)(tmp ^ (tmp >> 16));
-            return xor < 8; // shiny proc
-        }
+        // Hatched when the egg was shiny: PID needs to be from the ARNG.
+        return val == PIDType.G4MGAntiShiny;
     }
 }

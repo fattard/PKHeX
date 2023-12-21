@@ -4,10 +4,8 @@ using static System.Buffers.Binary.BinaryPrimitives;
 
 namespace PKHeX.Core;
 
-public sealed class Record3
+public sealed class Record3(SAV3 SAV)
 {
-    private readonly SAV3 SAV;
-
     public uint GetRecord(int record) => ReadUInt32LittleEndian(SAV.Large.AsSpan(GetRecordOffset(record))) ^ SAV.SecurityKey;
     public void SetRecord(int record, uint value) => WriteUInt32LittleEndian(SAV.Large.AsSpan(GetRecordOffset(record)), value ^ SAV.SecurityKey);
 
@@ -18,14 +16,12 @@ public sealed class Record3
         return offset;
     }
 
-    public Record3(SAV3 sav) => SAV = sav;
-
     public static int GetOffset(GameVersion ver) => ver switch
     {
         GameVersion.RS or GameVersion.R or GameVersion.S => 0x1540,
         GameVersion.E => 0x159C,
         GameVersion.FRLG or GameVersion.FR or GameVersion.LG => 0x1200,
-        _ => throw new ArgumentException(nameof(ver)),
+        _ => throw new ArgumentOutOfRangeException(nameof(ver), ver, null),
     };
 
     private static Type GetEnumType(GameVersion ver) => ver switch
@@ -33,7 +29,7 @@ public sealed class Record3
         GameVersion.RS or GameVersion.R or GameVersion.S => typeof(RecID3RuSa),
         GameVersion.FRLG or GameVersion.FR or GameVersion.LG => typeof(RecID3FRLG),
         GameVersion.E => typeof(RecID3Emerald),
-        _ => throw new ArgumentException(nameof(ver)),
+        _ => throw new ArgumentOutOfRangeException(nameof(ver), ver, null),
     };
 
     public static int[] GetEnumValues(GameVersion ver) => (int[])Enum.GetValues(GetEnumType(ver));

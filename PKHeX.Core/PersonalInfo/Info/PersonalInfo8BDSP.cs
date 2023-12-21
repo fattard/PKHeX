@@ -6,12 +6,10 @@ namespace PKHeX.Core;
 /// <summary>
 /// <see cref="PersonalInfo"/> class with values from the <see cref="GameVersion.BDSP"/> games.
 /// </summary>
-public sealed class PersonalInfo8BDSP : PersonalInfo, IPersonalAbility12H, IPersonalInfoTM, IPersonalInfoTutorType, IPermitRecord
+public sealed class PersonalInfo8BDSP(byte[] Data)
+    : PersonalInfo, IPersonalAbility12H, IPersonalInfoTM, IPersonalInfoTutorType, IPermitRecord
 {
     public const int SIZE = 0x44;
-    private readonly byte[] Data;
-
-    public PersonalInfo8BDSP(byte[] data) => Data = data;
 
     public override byte[] Write() => Data;
 
@@ -99,8 +97,7 @@ public sealed class PersonalInfo8BDSP : PersonalInfo, IPersonalAbility12H, IPers
 
     public void SetIsLearnTM(int index, bool value)
     {
-        if ((uint)index >= CountTM)
-            throw new ArgumentOutOfRangeException(nameof(index), index, null);
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual<uint>((uint)index, CountTM);
         if (value)
             Data[TMHM + (index >> 3)] |= (byte)(1 << (index & 7));
         else
@@ -116,8 +113,7 @@ public sealed class PersonalInfo8BDSP : PersonalInfo, IPersonalAbility12H, IPers
 
     public void SetIsLearnTutorType(int index, bool value)
     {
-        if ((uint)index >= TypeTutorsCount)
-            throw new ArgumentOutOfRangeException(nameof(index), index, null);
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual<uint>((uint)index, TypeTutorsCount);
         if (value)
             Data[TypeTutors + (index >> 3)] |= (byte)(1 << (index & 7));
         else

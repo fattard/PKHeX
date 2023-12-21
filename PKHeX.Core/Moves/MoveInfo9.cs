@@ -7,8 +7,8 @@ namespace PKHeX.Core;
 /// </summary>
 internal static class MoveInfo9
 {
-    public static ReadOnlySpan<byte> MovePP_SV => new byte[]
-    {
+    public static ReadOnlySpan<byte> MovePP_SV =>
+    [
         00, 35, 25, 10, 15, 20, 20, 15, 15, 15, 35, 30, 05, 10, 20, 30, 35, 35, 20, 15,
         20, 20, 25, 20, 30, 05, 10, 15, 15, 15, 25, 20, 05, 35, 15, 20, 20, 10, 15, 30,
         35, 20, 20, 30, 25, 40, 20, 15, 20, 20, 20, 30, 25, 15, 30, 25, 05, 15, 10, 05,
@@ -54,11 +54,11 @@ internal static class MoveInfo9
         10, 10, 10, 10, 15, 15, 10, 10, 10, 05, 15, 10, 10, 10, 10, 10, 10, 15, 15, 05,
         10, 15, 05, 01, 15, 10, 15, 10, 10, 10, 10, 10, 10, 10, 05, 15, 15, 10, 05, 05,
         10, 10, 10, 10, 20, 20, 20, 05, 10, 10, 05, 10, 05, 05, 10, 20, 10, 10, 10, 10,
-        10, 05, 15, 10, 10,
-    };
+        10, 05, 15, 10, 10, 10, 05, 05, 10, 05, 05, 10, 10, 15, 10, 10, 15, 10, 15, 05,
+    ];
 
-    public static ReadOnlySpan<byte> MoveType_SV => new byte[]
-    {
+    public static ReadOnlySpan<byte> MoveType_SV =>
+    [
         00, 00, 01, 00, 00, 00, 00, 09, 14, 12, 00, 00, 00, 00, 00, 00, 02, 02, 00, 02,
         00, 00, 11, 00, 01, 00, 01, 01, 04, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00,
         03, 06, 06, 00, 16, 00, 00, 00, 00, 00, 00, 03, 09, 09, 14, 10, 10, 10, 14, 14,
@@ -104,8 +104,8 @@ internal static class MoveInfo9
         13, 07, 08, 01, 07, 16, 02, 12, 04, 13, 13, 00, 06, 01, 07, 13, 15, 10, 11, 08,
         00, 14, 15, 00, 05, 10, 03, 00, 00, 16, 11, 09, 10, 00, 08, 13, 10, 16, 01, 12,
         00, 14, 00, 14, 06, 11, 10, 00, 13, 07, 09, 09, 12, 08, 16, 10, 09, 16, 03, 01,
-        17, 00, 11, 11, 11,
-    };
+        17, 00, 11, 11, 11, 12, 00, 15, 09, 12, 05, 08, 08, 15, 17, 09, 12, 13, 01, 03,
+    ];
 
     /// <summary>
     /// Bitflag indexes of moves that are not usable in game.
@@ -114,17 +114,17 @@ internal static class MoveInfo9
     /// This is a bitflag array, where each bit represents a move. If the bit is set, the move is not usable in game.
     /// Instead of allocating a hashset, this is a more efficient method (no allocation) with O(1) lookup (faster than HashSet's O(1) lookup).
     /// </remarks>
-    public static ReadOnlySpan<byte> DummiedMoves => new byte[] // 251 moves (502 bytes) => 100 bytes
-    {
+    public static ReadOnlySpan<byte> DummiedMoves => // 251 moves (502 bytes) => 100 bytes
+    [
         0x1C, 0x20, 0x00, 0x0C, 0x00, 0x02, 0x02, 0x00, 0x04, 0x00,
         0x04, 0x00, 0x09, 0x00, 0xA1, 0x22, 0x5D, 0x50, 0x36, 0xC8,
-        0xC1, 0x0E, 0x03, 0x42, 0x02, 0x00, 0x00, 0x65, 0x10, 0x22,
-        0x00, 0x00, 0x04, 0x0A, 0xA4, 0x80, 0xA7, 0x71, 0x00, 0x51,
-        0x91, 0x00, 0x00, 0x04, 0x64, 0x08, 0xA0, 0x67, 0x04, 0x00,
-        0x00, 0x00, 0x00, 0xA4, 0x80, 0x28, 0x01, 0x41, 0x04, 0x28,
-        0x23, 0x00, 0x04, 0x08, 0x10, 0x00, 0x0C, 0x83, 0xF7, 0xC6,
-        0x8A, 0x02, 0x4D, 0x10, 0x80, 0x03, 0xF0, 0xC3, 0xFF, 0xFF,
-        0xFF, 0xFF, 0x07, 0x85, 0x26, 0xA0, 0x94, 0xFF, 0x91, 0xE7,
-        0xFF, 0xFF, 0xFF, 0x00, 0xEE, 0xFF, 0x7F, 0x0A, 0x00, 0x0D,
-    };
+        0x00, 0x0E, 0x00, 0x42, 0x02, 0x00, 0x00, 0x45, 0x10, 0x22,
+        0x00, 0x00, 0x04, 0x0A, 0xA4, 0x80, 0x27, 0x70, 0x00, 0x51,
+        0x91, 0x00, 0x00, 0x04, 0x60, 0x08, 0xA0, 0x67, 0x04, 0x00,
+        0x00, 0x00, 0x00, 0xA4, 0x00, 0x28, 0x01, 0x01, 0x04, 0x28,
+        0x23, 0x00, 0x04, 0x08, 0x10, 0x00, 0x0C, 0x83, 0x07, 0x00,
+        0x8A, 0x02, 0x4C, 0x10, 0x80, 0x03, 0xF0, 0xC3, 0xFF, 0xFF,
+        0xFF, 0xFF, 0x07, 0x80, 0x26, 0xA0, 0x80, 0xFF, 0x11, 0xE1,
+        0xFB, 0xFF, 0xFF, 0x00, 0xEE, 0xFF, 0x7F, 0x08, 0x00, 0x0D,
+    ];
 }
